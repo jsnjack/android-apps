@@ -20,6 +20,40 @@ restorer = module("restore")
 
 
 class PublisherTests(unittest.TestCase):
+    def test_release_target_requires_known_app_and_exact_commit(self):
+        config = {"apps": [{"source": "owner/wahoo-share"}, {"source": "owner/weather"}]}
+        publisher.publication_target(config, "weather", "a" * 40)
+        publisher.publication_target(config, None, None)
+        for app, revision in [("unknown", None), (None, "a" * 40),
+                              ("weather", "master"), ("weather", "a" * 7)]:
+            with self.subTest(app=app, revision=revision), self.assertRaises(ValueError):
+                publisher.publication_target(config, app, revision)
+
+    def test_release_checks_out_exact_requested_commit(self):
+        app = {"id": "example.app", "source": "owner/weather", "branch": "master",
+               "private": False, "directory": "android"}
+        revision = "a" * 40
+        with tempfile.TemporaryDirectory() as folder:
+            with patch.object(publisher, "run", side_effect=[None, None, None, revision]) as run:
+                _, actual = publisher.source_revision(app, Path(folder), False, revision)
+                self.assertEqual(actual, revision)
+                self.assertEqual(run.call_args_list[1].args[0],
+                                 ["git", "fetch", "--depth", "1", "origin", revision])
+            with patch.object(publisher, "run", side_effect=[None, None, None, "b" * 40]):
+                with self.assertRaises(ValueError):
+                    publisher.source_revision(app, Path(folder), False, revision)
+
+    def test_unselected_app_keeps_its_published_revision_and_versions(self):
+        old = {"revision": "published", "version_code": 12,
+               "versions": [{"version_code": 12, "file": "app_12.apk"}]}
+        with patch.object(publisher, "restore_versions", return_value=old["versions"]):
+            result = publisher.preserved_app({"id": "app"}, old, Path("previous"),
+                                             Path("repo"), Path("tools"), 3)
+        self.assertEqual(result, old)
+        with self.assertRaises(ValueError):
+            publisher.preserved_app({"id": "app"}, {}, Path("previous"),
+                                    Path("repo"), Path("tools"), 3)
+
     def test_version_exceeds_existing_install_and_previous_publication(self):
         for floor, previous, expected in [(2, {}, 3), (2, {"version_code": 12}, 13),
                                            (20, {"version_code": 12}, 21)]:
@@ -29,6 +63,20 @@ class PublisherTests(unittest.TestCase):
     def test_version_limit(self):
         with self.assertRaises(ValueError):
             publisher.next_version({"version_floor": 2100000000}, {})
+
+    def test_release_version_matches_make_release_without_downgrading(self):
+        app = {"version_floor": 2}
+        for version, old, expected in [("0.39.0", 12, 39000), ("1.2.3", 12, 1002003),
+                                       ("0.1.0", 1200, 1201)]:
+            with self.subTest(version=version, old=old):
+                self.assertEqual(publisher.next_version(app, {"version_code": old}, version), expected)
+        for version in ["1.1000.0", "1.0.1000", "2101.0.0"]:
+            with self.subTest(version=version), self.assertRaises(ValueError):
+                publisher.next_version(app, {}, version)
+        for app_name, version in [(None, "1.2.3"), ("weather", "v1.2.3"), ("weather", "1.2")]:
+            with self.subTest(app=app_name, version=version), self.assertRaises(ValueError):
+                publisher.publication_target({"apps": [{"source": "owner/weather"}]},
+                                             app_name, None, version)
 
     def test_rejects_wrong_signer_package_version_and_debuggable_build(self):
         app = {"id": "example.app", "signer": "abc"}

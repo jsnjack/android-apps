@@ -1,12 +1,21 @@
 name: Publish Android apps
 
 on:
-  push:
-    branches: [main]
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
+      app:
+        description: App to publish
+        type: choice
+        options: [all, wahoo-share, weather]
+        default: all
+      revision:
+        description: Exact source commit (requires selecting one app)
+        type: string
+        default: ''
+      release_version:
+        description: App release version (major.minor.patch)
+        type: string
+        default: ''
       force:
         description: Rebuild both apps even when source revisions are unchanged
         type: boolean
@@ -48,6 +57,7 @@ jobs:
           sdkmanager 'platforms;android-34' 'build-tools;34.0.0'
           python -m venv .venv
           .venv/bin/pip install -r requirements.txt
+          make check
       - name: Restore private signing files and read-only source access
         env:
           APP_KEYSTORE: ${{ secrets.APP_KEYSTORE }}
@@ -77,10 +87,16 @@ jobs:
       - name: Test, build, sign and index
         id: build
         env:
-          FORCE_BUILD: ${{ github.event_name == 'push' || inputs.force }}
+          FORCE_BUILD: ${{ inputs.force }}
+          RELEASE_APP: ${{ inputs.app }}
+          RELEASE_REVISION: ${{ inputs.revision }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
         run: |
           args=()
           if [ "$FORCE_BUILD" = 'true' ]; then args+=(--force); fi
+          if [ -n "$RELEASE_APP" ] && [ "$RELEASE_APP" != 'all' ]; then args+=(--app "$RELEASE_APP"); fi
+          if [ -n "$RELEASE_REVISION" ]; then args+=(--revision "$RELEASE_REVISION"); fi
+          if [ -n "$RELEASE_VERSION" ]; then args+=(--release-version "$RELEASE_VERSION"); fi
           .venv/bin/python scripts/publish.py "${args[@]}"
       - name: Save durable publication
         if: steps.build.outputs.changed == 'true'

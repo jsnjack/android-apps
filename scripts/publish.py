@@ -31,9 +31,14 @@ def read_json(path):
     return json.loads(path.read_text())
 
 
-def next_version(app, previous):
+def next_version(app, previous, release_version=None):
     """Allocate a version above both installed baselines and published versions."""
     code = max(app["version_floor"], previous.get("version_code", 0)) + 1
+    if release_version:
+        major, minor, patch = map(int, release_version.split("."))
+        if minor >= 1000 or patch >= 1000:
+            raise ValueError("Release minor and patch versions must be below 1000")
+        code = max(code, major * 1000000 + minor * 1000 + patch)
     if code > 2100000000:
         raise ValueError("Android versionCode limit reached")
     return code
@@ -53,8 +58,8 @@ def verify_apk(path, app, code, tools):
         raise ValueError(f"Refusing debuggable APK: {path.name}")
 
 
-def source_revision(app, sources, local):
-    """Read a trusted default branch, or use an explicit local validation checkout."""
+def source_revision(app, sources, local, requested_revision=None):
+    """Read a trusted branch or the exact commit requested by an app release."""
     name = app["source"].split("/")[-1]
     checkout = sources / name
     if not local:
@@ -69,15 +74,39 @@ def source_revision(app, sources, local):
         else:
             run(["git", "clone", "--depth", "1", "--branch", app["branch"],
                  remote, str(checkout)])
+        if requested_revision:
+            run(["git", "fetch", "--depth", "1", "origin", requested_revision], cwd=checkout)
+            run(["git", "checkout", "--detach", "FETCH_HEAD"], cwd=checkout)
     revision = run(["git", "rev-parse", "HEAD"], cwd=checkout, capture=True).strip()
+    if requested_revision and revision != requested_revision:
+        raise ValueError(f"Source commit mismatch for {app['id']}")
     if local and run(["git", "status", "--porcelain"], cwd=checkout, capture=True).strip():
         revision += "-dirty"
     return checkout / app["directory"], revision
 
 
-def build_apk(project, app, revision, code, destination, tools, secrets):
+def publication_target(config, app, revision, release_version=None):
+    """Validate release selection before accessing sources or signing files."""
+    names = {item["source"].split("/")[-1] for item in config["apps"]}
+    if app and app not in names:
+        raise ValueError(f"Unknown app: {app}")
+    if revision and (not app or not re.fullmatch(r"[0-9a-f]{40}", revision)):
+        raise ValueError("An exact revision requires one app and a full lowercase commit SHA")
+    if release_version and (not app or not re.fullmatch(r"\d+\.\d+\.\d+", release_version)):
+        raise ValueError("A release version requires one app and a major.minor.patch version")
+
+
+def preserved_app(app, old, previous, repo, tools, keep):
+    """Keep an unselected app's published APKs without checking out its newer source."""
+    if not old:
+        raise ValueError(f"Publish all apps once before selecting only {app['id']}")
+    versions = restore_versions(app, old, previous, repo, tools, keep)
+    return dict(old, versions=versions)
+
+
+def build_apk(project, app, revision, code, destination, tools, secrets, release_version=None):
     """Test, build and sign an optimized APK with the existing personal certificate."""
-    version_name = f"{code}.{revision[:7]}"
+    version_name = release_version or f"{code}.{revision[:7]}"
     env = dict(os.environ, APP_VERSION_CODE=str(code), APP_VERSION_NAME=version_name)
     run([str(project / "gradlew"), "--no-daemon", "--init-script",
          str(ROOT / "scripts/version.gradle"), ":app:testDebugUnitTest", ":app:assembleRelease"],
@@ -164,6 +193,9 @@ def main():
     parser.add_argument("--secrets", type=Path, default=ROOT / "private")
     parser.add_argument("--output", type=Path, default=ROOT / "public")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--app", help="Publish only wahoo-share or weather")
+    parser.add_argument("--revision", help="Build this exact source commit for the selected app")
+    parser.add_argument("--release-version", help="Use the app's major.minor.patch release version")
     parser.add_argument("--debug", "-d", action="store_true")
     parser.add_argument("--trace", action="store_true")
     args = parser.parse_args()
@@ -177,6 +209,7 @@ def main():
     if os.environ.get("JAVA_HOME"):
         os.environ["PATH"] = str(Path(os.environ["JAVA_HOME"]) / "bin") + os.pathsep + os.environ["PATH"]
     config = read_json(ROOT / "apps.json")
+    publication_target(config, args.app, args.revision, args.release_version)
     secrets = args.secrets.resolve()
     for filename in ("app.keystore", "app-password", "repo.keystore", "repo-password"):
         if not (secrets / filename).is_file():
@@ -196,17 +229,23 @@ def main():
     state = {"apps": {}, "validation_only": args.local}
     changed = False
     for app in config["apps"]:
-        project, revision = source_revision(app, args.sources.resolve(), args.local)
         old = old_state["apps"].get(app["id"], {})
-        rebuild = args.local or args.force or revision != old.get("revision")
+        if args.app and app["source"].split("/")[-1] != args.app:
+            entry = preserved_app(app, old, previous, repo, tools, config["keep_versions"])
+            state["apps"][app["id"]] = entry
+            write_metadata(app, entry, metadata)
+            continue
+        project, revision = source_revision(app, args.sources.resolve(), args.local, args.revision)
+        rebuild = (args.local or args.force or revision != old.get("revision")
+                   or bool(args.release_version and args.release_version != old.get("version_name")))
         versions = restore_versions(app, old, previous, repo, tools,
                                     config["keep_versions"] - int(rebuild))
         if rebuild:
             changed = True
-            code = next_version(app, old)
+            code = next_version(app, old, args.release_version)
             destination = repo / f"{app['id']}_{code}.apk"
             LOG.info("Building %s at %s, version %s", app["name"], revision, code)
-            name = build_apk(project, app, revision, code, destination, tools, secrets)
+            name = build_apk(project, app, revision, code, destination, tools, secrets, args.release_version)
             versions.insert(0, {"version_code": code, "file": destination.name,
                                 "sha256": hashlib.sha256(destination.read_bytes()).hexdigest()})
             entry = {"revision": revision, "version_code": code, "version_name": name, "versions": versions}

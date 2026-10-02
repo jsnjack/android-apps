@@ -16,20 +16,22 @@ installation depend on your client settings and Android version.
 
 ## Publishing
 
-The workflow checks the apps' `master` branches every 15 minutes, builds only
-changed apps, runs their JVM tests, creates optimized release APKs and signs
-them with the existing personal app certificate. Wahoo source stays private;
-both APKs and the F-Droid repository are publicly downloadable.
+Run `make release` in either app repository after committing and pushing its
+changes to `master`. Once its GitHub release upload succeeds, the command starts
+this workflow for that app's exact source commit. It runs JVM tests, creates an
+optimized release APK, signs it with the existing personal certificate, and
+deploys the updated repository. The other app keeps its published APKs. Wahoo
+source stays private; both APKs are publicly downloadable.
 
-To publish immediately after pushing app changes:
+Retry a failed F-Droid trigger with `make fdroid-publish` in the app repository.
+To trigger both apps manually from their current `master` branches:
 
 ```sh
 gh workflow run publish.yml --repo jsnjack/android-apps
 ```
 
-GitHub schedules can run late and are disabled after prolonged inactivity in
-public repositories; the manual trigger remains available. Scheduled builds
-use standard public GitHub runners. The workflow runs serially, restores a
+There is no scheduled polling. Builds use standard public GitHub runners.
+The workflow runs serially, restores a
 previous repository snapshot from GitHub Releases, retains three versions per
 app, and deploys the complete signed site through GitHub Pages.
 
@@ -40,6 +42,8 @@ App and repository signing are separate. Losing the repository key requires
 adding a new repository; losing the app key prevents normal in-place updates.
 
 Each changed app gets a `versionCode` above its previous published version.
+App releases use the same version name and numeric version mapping as
+`make release`; the publisher increases the code further if needed to avoid a downgrade.
 After installing repository builds, local development APKs must use at least
 that version code. Read it from the install page or `state.json`, then build:
 
