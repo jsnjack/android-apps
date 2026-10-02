@@ -1,0 +1,9 @@
+.venv/
+private/
+work/
+public/
+previous/
+__pycache__/
+*.pyc
+*.zip
+

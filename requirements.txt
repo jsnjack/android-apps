@@ -1,0 +1,4 @@
+fdroidserver==2.4.3
+# fdroidserver 2.4.3's APK signature parser is incompatible with androguard 4.1.4.
+androguard==4.1.3
+PyYAML==6.0.3

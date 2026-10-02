@@ -1,0 +1,35 @@
+{
+  "repository": "jsnjack/android-apps",
+  "url": "https://jsnjack.github.io/android-apps/fdroid/repo",
+  "name": "Yauhen's Android apps",
+  "description": "Personal Android apps: Wahoo Share and Weather Widget.",
+  "keep_versions": 3,
+  "apps": [
+    {
+      "id": "net.surfly.wahooshare",
+      "name": "Wahoo Share",
+      "source": "jsnjack/wahoo-share",
+      "private": true,
+      "branch": "master",
+      "directory": ".",
+      "license": "Unknown",
+      "summary": "Send locations and cycling routes to your Wahoo ELEMNT",
+      "description": "Share locations and cycling routes with Wahoo ELEMNT. Find nearby water, toilets, bicycle repair, cafes and shops. Requires the Wahoo companion app for forwarding destinations.",
+      "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
+      "version_floor": 1
+    },
+    {
+      "id": "net.surfly.weather.widget",
+      "name": "Weather Widget",
+      "source": "jsnjack/weather",
+      "private": false,
+      "branch": "master",
+      "directory": "android",
+      "license": "Unknown",
+      "summary": "Rain and weather forecasts on your home screen",
+      "description": "Home-screen weather widget showing rain and weather forecasts. Requires a reachable weather server; the default is https://weather.yauhen.cc. Configure the server and location when adding the widget.",
+      "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
+      "version_floor": 2
+    }
+  ]
+}

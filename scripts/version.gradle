@@ -1,0 +1,9 @@
+// finalizeDsl runs after the app's DSL and before AGP reads its version.
+gradle.beforeProject { project ->
+    project.plugins.withId('com.android.application') {
+        project.extensions.getByName('androidComponents').finalizeDsl { android ->
+            android.defaultConfig.versionCode = Integer.parseInt(System.getenv('APP_VERSION_CODE'))
+            android.defaultConfig.versionName = System.getenv('APP_VERSION_NAME')
+        }
+    }
+}
