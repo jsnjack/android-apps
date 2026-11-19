@@ -40,7 +40,7 @@
       "directory": ".",
       "license": "Unknown",
       "summary": "Loyalty cards, vouchers, tickets and boarding passes, one tap away",
-      "description": "Keeps loyalty cards, vouchers, gift cards, event tickets and boarding passes on the phone and shows any code at full brightness in one tap. Reads codes from the camera, screenshots, PDF tickets and Apple Wallet passes; groups tickets and passengers; shows what is coming up. Optional live flight info uses your own AeroDataBox key from RapidAPI.",
+      "description": "Keeps loyalty cards, vouchers, gift cards, event tickets and boarding passes on the phone and shows any code at full brightness in one tap. Reads codes from the camera, screenshots, PDF tickets and Apple Wallet passes; groups tickets and passengers; shows what is coming up. Live gate, delay and baggage belt information for boarding passes comes from flightstats.com, with no account or key.",
       "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
       "version_floor": 15000
     }
