@@ -6,7 +6,7 @@ on:
       app:
         description: App to publish
         type: choice
-        options: [all, wahoo-share, weather]
+        options: [all, wahoo-share, weather, wallet]
         default: all
       revision:
         description: Exact source commit (requires selecting one app)
@@ -17,7 +17,7 @@ on:
         type: string
         default: ''
       force:
-        description: Rebuild both apps even when source revisions are unchanged
+        description: Rebuild every app even when source revisions are unchanged
         type: boolean
         default: false
 
@@ -54,7 +54,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - name: Install pinned toolchain
         run: |
-          sdkmanager 'platforms;android-34' 'build-tools;34.0.0'
+          sdkmanager 'platforms;android-34' 'build-tools;34.0.0' 'platforms;android-37.0' 'build-tools;37.0.0'
           python -m venv .venv
           .venv/bin/pip install -r requirements.txt
           make check

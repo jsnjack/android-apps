@@ -1,30 +1,31 @@
 # Personal Android apps
 
-One F-Droid repository for Wahoo Share and Weather Widget.
+One F-Droid repository for Wahoo Share, Weather Widget and Wallet.
 
 ## Install
 
 Install [F-Droid](https://f-droid.org/), add this repository in its repository
-settings, refresh, then install either app:
+settings, refresh, then install any of the apps:
 
 **https://jsnjack.github.io/android-apps/fdroid/repo/**
 
 The [install page](https://jsnjack.github.io/android-apps/) includes a QR code,
-the repository fingerprint, and direct APK downloads. Requires Android 12+.
+the repository fingerprint, and direct APK downloads. Requires Android 12+;
+Wallet needs Android 13+.
 Allow F-Droid to install apps when Android asks. Update timing and unattended
 installation depend on your client settings and Android version.
 
 ## Publishing
 
-Run `make release` in either app repository after committing and pushing its
+Run `make release` in any app repository after committing and pushing its
 changes to `master`. Once its GitHub release upload succeeds, the command starts
 this workflow for that app's exact source commit. It runs JVM tests, creates an
 optimized release APK, signs it with the existing personal certificate, and
-deploys the updated repository. The other app keeps its published APKs. Wahoo
-source stays private; both APKs are publicly downloadable.
+deploys the updated repository. The other apps keep their published APKs.
+Wahoo source stays private; every APK is publicly downloadable.
 
 Retry a failed F-Droid trigger with `make fdroid-publish` in the app repository.
-To trigger both apps manually from their current `master` branches:
+To trigger every app manually from its current `master` branch:
 
 ```sh
 gh workflow run publish.yml --repo jsnjack/android-apps
@@ -76,7 +77,8 @@ encrypted storage. GitHub Pages must use **GitHub Actions** as its build source.
 
 ## Local validation
 
-Install JDK 21, Android SDK platform 34 and build-tools 34.0.0, then:
+Install JDK 21, Android SDK platforms 34 and 37.0 and build-tools 34.0.0 and
+37.0.0 (Wallet builds against 37), then:
 
 ```sh
 python3 -m venv .venv

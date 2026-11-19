@@ -177,8 +177,8 @@ def write_site(config, state, output, fingerprint):
 <p><code>{html.escape(config['url'])}</code></p>
 <img src="repository-qr.png" alt="Scan to add the F-Droid repository">
 <p>Repository fingerprint:<br><code>{fingerprint}</code></p>
-{''.join(cards)}<p>Requires Android 12 or newer. Allow F-Droid to install apps when Android asks.</p>
-<p>Weather Widget needs access to its configured weather server. Wahoo Share uses the Wahoo companion app.</p></html>'''
+{''.join(cards)}<p>Requires Android 12 or newer; Wallet needs Android 13. Allow F-Droid to install apps when Android asks.</p>
+<p>Weather Widget needs access to its configured weather server. Wahoo Share uses the Wahoo companion app. Wallet keeps cards on the phone and in its Google backup.</p></html>'''
     (output / "index.html").write_text(page)
     (output / ".nojekyll").touch()
     (output / "state.json").write_text(json.dumps(state, indent=2) + "\n")

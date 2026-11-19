@@ -2,7 +2,7 @@
   "repository": "jsnjack/android-apps",
   "url": "https://jsnjack.github.io/android-apps/fdroid/repo",
   "name": "Yauhen's Android apps",
-  "description": "Personal Android apps: Wahoo Share and Weather Widget.",
+  "description": "Personal Android apps: Wahoo Share, Weather Widget and Wallet.",
   "keep_versions": 3,
   "apps": [
     {
@@ -30,6 +30,19 @@
       "description": "Home-screen weather widget showing rain and weather forecasts. Requires a reachable weather server; the default is https://weather.yauhen.cc. Configure the server and location when adding the widget.",
       "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
       "version_floor": 2
+    },
+    {
+      "id": "io.github.jsnjack.wallet",
+      "name": "Wallet",
+      "source": "jsnjack/wallet",
+      "private": false,
+      "branch": "master",
+      "directory": ".",
+      "license": "Unknown",
+      "summary": "Loyalty cards, vouchers, tickets and boarding passes, one tap away",
+      "description": "Keeps loyalty cards, vouchers, gift cards, event tickets and boarding passes on the phone and shows any code at full brightness in one tap. Reads codes from the camera, screenshots, PDF tickets and Apple Wallet passes; groups tickets and passengers; shows what is coming up. Optional live flight info uses your own AeroDataBox key from RapidAPI.",
+      "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
+      "version_floor": 15000
     }
   ]
 }
