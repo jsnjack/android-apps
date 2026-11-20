@@ -156,29 +156,124 @@ def repository_fingerprint(secrets):
     return hashlib.sha256(certificate).hexdigest().upper()
 
 
-def write_site(config, state, output, fingerprint):
-    import qrcode
-    url = config["url"] + "?fingerprint=" + fingerprint
-    qrcode.make(url).save(output / "repository-qr.png")
+# Tile colours for the apps' monograms, in apps.json order; white text reads on each.
+TILE_COLOURS = ["#2457d6", "#c2410c", "#0f766e", "#7c3aed", "#be185d"]
+
+PAGE_STYLE = """
+:root{--bg:#f4f6f5;--card:#fff;--fg:#16201e;--muted:#5a6765;--line:#dde3e1;--accent:#0b7a6e;
+--on-accent:#fff;--shadow:0 1px 2px rgb(0 0 0/.04),0 10px 30px rgb(16 40 36/.07)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1413;--card:#172120;--fg:#e6eeec;--muted:#98a7a4;
+--line:#2a3533;--accent:#5fd4c1;--on-accent:#04211d;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:860px;margin:0 auto;padding:48px 16px 64px}
+.hero,.app,details{background:var(--card);box-shadow:var(--shadow)}
+.hero{display:flex;gap:32px;align-items:center;justify-content:space-between;border-radius:28px;padding:36px}
+h1{font-size:clamp(28px,6vw,42px);line-height:1.1;letter-spacing:-.02em;margin:0 0 10px}
+.lead{color:var(--muted);font-size:18px;margin:0 0 24px;max-width:30em}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.button{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;
+border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none}
+.button:hover{border-color:var(--accent)}
+.button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.qr{flex:none;margin:0;text-align:center;color:var(--muted);font-size:13px}
+.qr img{display:block;width:172px;height:172px;margin-bottom:8px;padding:6px;border-radius:18px;
+background:#fff;image-rendering:pixelated;border:1px solid var(--line)}
+h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+margin:40px 6px 12px}
+.apps{display:grid;gap:12px}
+.app{display:flex;gap:18px;align-items:flex-start;border-radius:22px;padding:22px}
+.tile{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:17px;
+background:var(--tile);color:#fff;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.app h3{font-size:19px;margin:2px 0 2px}
+.app p{margin:0}
+.meta{color:var(--muted);font-size:14px;margin-top:4px!important}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:14px!important}
+.links .button{min-height:40px;padding:0 16px;font-size:15px}
+a.plain{color:var(--accent);font-weight:600;text-decoration:none}
+a.plain:hover,.button:focus-visible{text-decoration:underline}
+details{margin-top:12px;border-radius:22px;padding:0 22px}
+summary{cursor:pointer;padding:18px 0;font-weight:600}
+details p{margin:0 0 14px;color:var(--muted)}
+dl{margin:0 0 20px}
+dt{font-size:13px;color:var(--muted);margin-top:10px}
+dd{margin:2px 0 0}
+code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere;
+background:var(--bg);border-radius:6px;padding:2px 6px}
+@media (max-width:640px){main{padding-top:20px}.hero{display:block;padding:26px 22px}.qr{display:none}
+.app{padding:18px;gap:14px}}
+"""
+
+
+def monogram(name):
+    """The first letter of the first two words: Wahoo Share → WS, Wallet → W; "&" is skipped."""
+    return "".join([word[0] for word in name.split() if word[0].isalnum()][:2]).upper()
+
+
+def size_text(path):
+    return f"{path.stat().st_size / 1_000_000:.1f} MB" if path.is_file() else None
+
+
+def site_page(config, state, fingerprint, apk_dir):
+    """The install page: add the repository, then each app with its direct download."""
+    add_url = config["url"] + "?fingerprint=" + fingerprint
     cards = []
-    for app in config["apps"]:
+    for index, app in enumerate(config["apps"]):
         entry = state["apps"][app["id"]]
-        href = "fdroid/repo/" + entry["versions"][0]["file"]
-        cards.append(f'<article><h2>{html.escape(app["name"])}</h2>'
-                     f'<p>{html.escape(app["summary"])}</p>'
-                     f'<p>Version {html.escape(entry["version_name"])}</p>'
-                     f'<a href="{html.escape(href)}">Download APK</a></article>')
-    page = f'''<!doctype html><html lang="en"><meta charset="utf-8">
+        file = entry["versions"][0]["file"]
+        meta = " · ".join(filter(None, ["Version " + entry["version_name"], size_text(apk_dir / file)]))
+        links = [f'<a class="button" href="{html.escape("fdroid/repo/" + file)}">Download APK</a>']
+        if not app["private"]:
+            source = f"https://github.com/{app['source']}"
+            links.append(f'<a class="plain" href="{html.escape(source)}">Source code</a>')
+        colour = TILE_COLOURS[index % len(TILE_COLOURS)]
+        cards.append(f'''<article class="app">
+<div class="tile" style="--tile:{colour}" aria-hidden="true">{html.escape(monogram(app["name"]))}</div>
+<div><h3>{html.escape(app["name"])}</h3><p>{html.escape(app["summary"])}</p>
+<p class="meta">{html.escape(meta)}</p><p class="links">{"".join(links)}</p></div>
+</article>''')
+    name = html.escape(config["name"])
+    return f'''<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(config['name'])}</title>
-<style>body{{font:18px system-ui;max-width:780px;margin:3rem auto;padding:0 1rem;line-height:1.6;background:#fafaf8;color:#182b2a}}a{{color:#086c61}}article{{padding:1rem 0;border-top:1px solid #ddd}}code{{overflow-wrap:anywhere;font-size:14px}}img{{width:220px;max-width:100%}}</style>
-<h1>{html.escape(config['name'])}</h1><p>Install F-Droid, then add this repository to get these apps and their updates.</p>
-<p><a href="{html.escape(url)}">Add repository to F-Droid</a> · <a href="https://f-droid.org/">Get F-Droid</a></p>
-<p><code>{html.escape(config['url'])}</code></p>
-<img src="repository-qr.png" alt="Scan to add the F-Droid repository">
-<p>Repository fingerprint:<br><code>{fingerprint}</code></p>
-{''.join(cards)}<p>Requires Android 12 or newer; Wallet needs Android 13. Allow F-Droid to install apps when Android asks.</p>
-<p>Weather Widget needs access to its configured weather server. Wahoo Share uses the Wahoo companion app. Wallet keeps cards on the phone and in its Google backup.</p></html>'''
+<meta name="color-scheme" content="light dark">
+<title>{name}</title>
+<style>{PAGE_STYLE}</style>
+</head>
+<body>
+<main>
+<header class="hero">
+<div>
+<h1>{name}</h1>
+<p class="lead">Add this repository to F-Droid to install the apps and get their updates.</p>
+<div class="actions"><a class="button primary" href="{html.escape(add_url)}">Add to F-Droid</a>
+<a class="button" href="https://f-droid.org/">Get F-Droid</a></div>
+</div>
+<figure class="qr"><img src="repository-qr.png" alt="QR code that adds this repository to F-Droid">
+<figcaption>Scan with your phone</figcaption></figure>
+</header>
+<h2>Apps</h2>
+<section class="apps">
+{"".join(cards)}
+</section>
+<details>
+<summary>Add the repository by hand</summary>
+<p>In F-Droid, open Settings → Repositories, tap +, and enter this address. Check that the fingerprint matches.</p>
+<dl><dt>Address</dt><dd><code>{html.escape(config["url"])}</code></dd>
+<dt>Fingerprint</dt><dd><code>{html.escape(fingerprint)}</code></dd></dl>
+</details>
+</main>
+</body>
+</html>
+'''
+
+
+def write_site(config, state, output, fingerprint, page):
+    import qrcode
+    qrcode.make(config["url"] + "?fingerprint=" + fingerprint).save(output / "repository-qr.png")
     (output / "index.html").write_text(page)
     (output / ".nojekyll").touch()
     (output / "state.json").write_text(json.dumps(state, indent=2) + "\n")
@@ -276,7 +371,8 @@ def main():
     args.output.mkdir(parents=True)
     shutil.copytree(repo, args.output / "fdroid/repo")
     fingerprint = repository_fingerprint(secrets)
-    write_site(config, state, args.output, fingerprint)
+    page = site_page(config, state, fingerprint, repo)
+    write_site(config, state, args.output, fingerprint, page)
     run([sys.executable, str(ROOT / "scripts/verify.py"), str(args.output)])
     archive = ROOT / "repository.zip"
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:

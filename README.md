@@ -9,9 +9,9 @@ settings, refresh, then install any of the apps:
 
 **https://jsnjack.github.io/android-apps/fdroid/repo/**
 
-The [install page](https://jsnjack.github.io/android-apps/) includes a QR code,
-the repository fingerprint, and direct APK downloads. Requires Android 12+;
-Wallet needs Android 13+.
+The [install page](https://jsnjack.github.io/android-apps/) has an "Add to
+F-Droid" button, a QR code for adding the repository from a computer, direct APK
+downloads, and the repository address and fingerprint for adding it by hand.
 Allow F-Droid to install apps when Android asks. Update timing and unattended
 installation depend on your client settings and Android version.
 

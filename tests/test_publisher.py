@@ -91,6 +91,34 @@ class PublisherTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         publisher.verify_apk(Path("app.apk"), app, 3, Path("tools"))
 
+    SITE_CONFIG = {
+        "name": "Owner's apps", "url": "https://example.org/fdroid/repo",
+        "apps": [{"id": "one.app", "name": "Rain & Sun", "summary": "Forecasts <today>",
+                  "source": "owner/weather", "private": False},
+                 {"id": "two.app", "name": "Secret", "summary": "Private one",
+                  "source": "owner/secret", "private": True}],
+    }
+    SITE_STATE = {"apps": {
+        "one.app": {"version_name": "1.2.3", "versions": [{"file": "one.app_3.apk"}]},
+        "two.app": {"version_name": "0.1.0", "versions": [{"file": "two.app_1.apk"}]},
+    }}
+
+    def test_install_page_lists_each_app_with_download_and_escaped_text(self):
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "one.app_3.apk").write_bytes(b"x" * 2_500_000)
+            page = publisher.site_page(self.SITE_CONFIG, self.SITE_STATE, "ABC123", Path(folder))
+        self.assertIn("Rain &amp; Sun", page)
+        self.assertIn("Forecasts &lt;today&gt;", page)
+        self.assertIn(">RS</div>", page)
+        self.assertIn("Version 1.2.3 · 2.5 MB", page)
+        self.assertIn("Version 0.1.0</p>", page)
+        self.assertIn('href="fdroid/repo/one.app_3.apk"', page)
+        self.assertIn('href="fdroid/repo/two.app_1.apk"', page)
+        self.assertIn('href="https://example.org/fdroid/repo?fingerprint=ABC123"', page)
+        self.assertIn("<code>ABC123</code>", page)
+        self.assertIn("https://github.com/owner/weather", page)
+        self.assertNotIn("owner/secret", page)
+
     def test_restore_rejects_zip_path_traversal(self):
         for filename in ["../private/key", "/tmp/key", "folder/../../key", "folder\\key"]:
             with self.subTest(filename=filename), tempfile.TemporaryDirectory() as folder:
