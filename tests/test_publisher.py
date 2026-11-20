@@ -119,6 +119,14 @@ class PublisherTests(unittest.TestCase):
         self.assertIn("https://github.com/owner/weather", page)
         self.assertNotIn("owner/secret", page)
 
+    def test_page_only_change_deploys(self):
+        with tempfile.TemporaryDirectory() as folder:
+            previous = Path(folder)
+            self.assertTrue(publisher.page_changed(previous, "new"))
+            (previous / "index.html").write_text("old")
+            self.assertTrue(publisher.page_changed(previous, "new"))
+            self.assertFalse(publisher.page_changed(previous, "old"))
+
     def test_restore_rejects_zip_path_traversal(self):
         for filename in ["../private/key", "/tmp/key", "folder/../../key", "folder\\key"]:
             with self.subTest(filename=filename), tempfile.TemporaryDirectory() as folder:

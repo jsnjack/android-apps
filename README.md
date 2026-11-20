@@ -22,6 +22,7 @@ changes to `master`. Once its GitHub release upload succeeds, the command starts
 this workflow for that app's exact source commit. It runs JVM tests, creates an
 optimized release APK, signs it with the existing personal certificate, and
 deploys the updated repository. The other apps keep their published APKs.
+A run that rebuilds no app still deploys when the install page changed.
 Wahoo source stays private; every APK is publicly downloadable.
 
 Retry a failed F-Droid trigger with `make fdroid-publish` in the app repository.

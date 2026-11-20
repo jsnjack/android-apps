@@ -271,6 +271,12 @@ def site_page(config, state, fingerprint, apk_dir):
 '''
 
 
+def page_changed(previous, page):
+    """Whether the published install page differs, so a page-only change still deploys."""
+    published = previous / "index.html"
+    return not published.is_file() or published.read_text() != page
+
+
 def write_site(config, state, output, fingerprint, page):
     import qrcode
     qrcode.make(config["url"] + "?fingerprint=" + fingerprint).save(output / "repository-qr.png")
@@ -348,11 +354,16 @@ def main():
             entry = dict(old, versions=versions)
         state["apps"][app["id"]] = entry
         write_metadata(app, entry, metadata)
+    fingerprint = repository_fingerprint(secrets)
+    page = site_page(config, state, fingerprint, repo)
+    if not changed and page_changed(previous, page):
+        LOG.info("The install page changed; deploying it with the current apps")
+        changed = True
     if "GITHUB_OUTPUT" in os.environ:
         with open(os.environ["GITHUB_OUTPUT"], "a") as output:
             output.write(f"changed={str(changed).lower()}\n")
     if not changed:
-        LOG.info("Both apps are already current; no deployment needed")
+        LOG.info("Every app and the install page are already current; no deployment needed")
         return
     fdroid_config = {
         "repo_url": config["url"], "repo_name": config["name"],
@@ -370,8 +381,6 @@ def main():
         shutil.rmtree(args.output)
     args.output.mkdir(parents=True)
     shutil.copytree(repo, args.output / "fdroid/repo")
-    fingerprint = repository_fingerprint(secrets)
-    page = site_page(config, state, fingerprint, repo)
     write_site(config, state, args.output, fingerprint, page)
     run([sys.executable, str(ROOT / "scripts/verify.py"), str(args.output)])
     archive = ROOT / "repository.zip"
