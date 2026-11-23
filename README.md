@@ -20,6 +20,10 @@ here, with the version as the asset's label, which the page shows:
 gh release upload apps bin/release/<file>#<version> --clobber --repo jsnjack/android-apps
 ```
 
+`make status` here compares each app's file on the page with its latest
+release and names the app whose release did not reach the page; `make
+publish-apk` in that app's repository uploads it again.
+
 Every app is signed with the personal key `~/.android/debug.keystore`
 (alias `androiddebugkey`, certificate SHA-256 `53d59ccc…13ebf`), the key the
 earlier F-Droid builds used, so a download installs over them. A new upload
