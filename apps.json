@@ -2,7 +2,7 @@
   "repository": "jsnjack/android-apps",
   "url": "https://jsnjack.github.io/android-apps/fdroid/repo",
   "name": "Yauhen's Android apps",
-  "description": "Personal Android apps: Wahoo Share, Weather Widget and Wallet.",
+  "description": "Personal Android apps: Wahoo Share, Weather Widget, Wallet and DeskLink.",
   "keep_versions": 3,
   "apps": [
     {
@@ -43,6 +43,19 @@
       "description": "Keeps loyalty cards, vouchers, gift cards, event tickets and boarding passes on the phone and shows any code at full brightness in one tap. Reads codes from the camera, screenshots, PDF tickets and Apple Wallet passes; groups tickets and passengers; shows what is coming up. Live gate, delay and baggage belt information for boarding passes comes from flightstats.com, with no account or key.",
       "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
       "version_floor": 15000
+    },
+    {
+      "id": "com.desklink.client",
+      "name": "DeskLink",
+      "source": "jsnjack/desklink",
+      "private": false,
+      "branch": "master",
+      "directory": "android",
+      "license": "MIT",
+      "summary": "Your GNOME desktop on the tablet, with keyboard, trackpad and S-Pen",
+      "description": "Shows a Fedora GNOME desktop on an Android tablet over the LAN or a VPN, decoded in hardware (AV1 or 10-bit HEVC) at up to 120 frames a second, and sends the tablet's keyboard, mouse, touch trackpad gestures and S-Pen to it. Requires desklinkd running on the desktop (RPMs at github.com/jsnjack/desklink/releases); pair once by scanning the QR code from desklinkd pair.",
+      "signer": "53d59cccec238bea3efb034a95734a69134d15b220330c2bab7ebedbb6613ebf",
+      "version_floor": 9000
     }
   ]
 }

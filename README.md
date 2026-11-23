@@ -1,6 +1,6 @@
 # Personal Android apps
 
-One F-Droid repository for Wahoo Share, Weather Widget and Wallet.
+One F-Droid repository for Wahoo Share, Weather Widget, Wallet and DeskLink.
 
 ## Install
 

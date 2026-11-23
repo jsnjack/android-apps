@@ -6,7 +6,7 @@ on:
       app:
         description: App to publish
         type: choice
-        options: [all, wahoo-share, weather, wallet]
+        options: [all, wahoo-share, weather, wallet, desklink]
         default: all
       revision:
         description: Exact source commit (requires selecting one app)
