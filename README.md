@@ -24,6 +24,10 @@ gh release upload apps bin/release/<file>#<version> --clobber --repo jsnjack/and
 release and names the app whose release did not reach the page; `make
 publish-apk` in that app's repository uploads it again.
 
+The page shows each app's own launcher icon from `icons/`; `make icons`
+regenerates them from the apps' vector drawables in sibling checkouts
+(`../desklink`, `../wallet`, `../weather`, `../wahoo-share`).
+
 Every app is signed with the personal key `~/.android/debug.keystore`
 (alias `androiddebugkey`, certificate SHA-256 `53d59ccc…13ebf`), the key the
 earlier F-Droid builds used, so a download installs over them. A new upload

@@ -2,4 +2,8 @@
 status:
 	@./status.sh
 
-.PHONY: status
+# icons converts the apps' launcher icons (from sibling checkouts) to icons/*.svg.
+icons:
+	python3 icons.py
+
+.PHONY: status icons

@@ -5,57 +5,86 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Yauhen's Android apps</title>
+<link rel="icon" href="icons/desklink.svg">
 <style>
-:root{--bg:#f4f6f5;--card:#fff;--fg:#16201e;--muted:#5a6765;--line:#dde3e1;--accent:#0b7a6e;
---on-accent:#fff;--shadow:0 1px 2px rgb(0 0 0/.04),0 10px 30px rgb(16 40 36/.07)}
-@media (prefers-color-scheme:dark){:root{--bg:#0e1413;--card:#172120;--fg:#e6eeec;--muted:#98a7a4;
---line:#2a3533;--accent:#5fd4c1;--on-accent:#04211d;--shadow:none}}
+:root{
+  --bg:#f3f5f7;--bg2:#e8eef5;--card:#ffffff;--fg:#121820;--muted:#5d6874;--line:#e1e6ec;
+  --accent:#2563eb;--accent-2:#1d4ed8;--on-accent:#fff;--chip:#eef2f7;--chip-fg:#334155;
+  --shadow:0 1px 2px rgb(15 23 42/.05),0 8px 24px rgb(15 23 42/.07);
+  --shadow-hover:0 2px 4px rgb(15 23 42/.06),0 14px 34px rgb(15 23 42/.11);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b0f14;--bg2:#111a24;--card:#151c25;--fg:#e8edf3;--muted:#93a1b1;--line:#243040;
+  --accent:#60a5fa;--accent-2:#3b82f6;--on-accent:#06101e;--chip:#1e2834;--chip-fg:#c7d2de;
+  --shadow:0 1px 0 rgb(255 255 255/.03) inset;--shadow-hover:0 1px 0 rgb(255 255 255/.05) inset;
+}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);
-font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
-main{max-width:860px;margin:0 auto;padding:48px 16px 64px}
-.hero,.app,details{background:var(--card);box-shadow:var(--shadow)}
-.hero{border-radius:28px;padding:36px}
-h1{font-size:clamp(28px,6vw,42px);line-height:1.1;letter-spacing:-.02em;margin:0 0 10px}
-.lead{color:var(--muted);font-size:18px;margin:0;max-width:34em}
-.button{display:inline-flex;align-items:center;min-height:44px;padding:0 20px;border-radius:999px;
-border:1px solid var(--line);color:var(--fg);font-weight:600;text-decoration:none}
-.button:hover{border-color:var(--accent)}
-.button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
-margin:40px 6px 12px}
-.apps{display:grid;gap:12px}
-.app{display:flex;gap:18px;align-items:flex-start;border-radius:22px;padding:22px}
-.tile{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:17px;
-background:var(--tile);color:#fff;font-size:20px;font-weight:800;letter-spacing:-.02em}
-.app h3{font-size:19px;margin:2px 0 2px}
-.app p{margin:0}
-.meta{color:var(--muted);font-size:14px;margin-top:4px!important}
-.links{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:14px!important}
-.links .button{min-height:40px;padding:0 16px;font-size:15px}
-a.plain{color:var(--accent);font-weight:600;text-decoration:none}
-a.plain:hover,.button:focus-visible{text-decoration:underline}
-details{margin-top:12px;border-radius:22px;padding:0 22px}
-summary{cursor:pointer;padding:18px 0;font-weight:600}
-details p{margin:0 0 14px;color:var(--muted)}
-@media (max-width:640px){main{padding-top:20px}.hero{padding:26px 22px}.app{padding:18px;gap:14px}}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--fg);
+  background:radial-gradient(1200px 500px at 50% -120px,var(--bg2),transparent),var(--bg);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:56px 16px 72px}
+header{text-align:center;margin-bottom:40px}
+header .mark{display:inline-flex;gap:8px;margin-bottom:18px}
+header .mark img{width:36px;height:36px;border-radius:10px;box-shadow:var(--shadow)}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.1;letter-spacing:-.025em;margin:0 0 12px}
+.lead{color:var(--muted);font-size:18px;margin:0 auto;max-width:34em}
+.apps{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}
+.app{display:flex;flex-direction:column;gap:16px;background:var(--card);border:1px solid var(--line);
+  border-radius:24px;padding:22px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+.app:hover{box-shadow:var(--shadow-hover);transform:translateY(-1px)}
+.top{display:flex;gap:16px;align-items:flex-start}
+.icon{flex:none;width:72px;height:72px;border-radius:22%;overflow:hidden;
+  box-shadow:0 1px 2px rgb(0 0 0/.12),0 4px 12px rgb(0 0 0/.12)}
+.icon img{display:block;width:100%;height:100%}
+.title{min-width:0}
+h2{font-size:20px;line-height:1.25;margin:2px 0 4px;letter-spacing:-.01em}
+.summary{margin:0;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;min-height:26px}
+.chip{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;
+  background:var(--chip);color:var(--chip-fg);font-size:13px;font-weight:600;white-space:nowrap}
+.chip.version{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.actions{display:flex;gap:10px;align-items:center;margin-top:auto}
+.install{flex:1;display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:48px;
+  border-radius:14px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;
+  text-decoration:none;transition:background .15s}
+.install:hover{background:var(--accent-2)}
+.install:focus-visible,.source:focus-visible,summary:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:2px}
+.install svg{width:20px;height:20px}
+.source{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 16px;
+  border-radius:14px;border:1px solid var(--line);color:var(--fg);text-decoration:none;font-weight:600}
+.source:hover{border-color:var(--accent)}
+.help{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:0 22px}
+summary{cursor:pointer;padding:18px 0;font-weight:700;list-style:none;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--muted);font-weight:400;font-size:20px;line-height:1}
+details[open] summary::after{content:"−"}
+.help ol{margin:0 0 18px;padding-left:20px;color:var(--muted)}
+.help li{margin:6px 0}
+footer{margin-top:32px;text-align:center;color:var(--muted);font-size:14px}
+footer a{color:inherit}
+@media (max-width:520px){main{padding-top:32px}.app{padding:18px;border-radius:20px}.icon{width:60px;height:60px}}
 </style>
 </head>
 <body>
 <main>
-<header class="hero">
-<h1>Yauhen's Android apps</h1>
-<p class="lead">Tap <strong>Install</strong> to download an app, then open the download to install it.
-Installing a newer version updates the app in place and keeps its data.</p>
+<header>
+  <div class="mark" aria-hidden="true">
+    <img src="icons/desklink.svg" alt=""><img src="icons/wallet.svg" alt=""><img src="icons/weather-widget.svg" alt=""><img src="icons/wahoo-share.svg" alt="">
+  </div>
+  <h1>Yauhen's Android apps</h1>
+  <p class="lead">Tap <strong>Install</strong>, then open the download. A newer version installs over the old one and keeps your data.</p>
 </header>
-<h2>Apps</h2>
 <section class="apps" id="apps"></section>
-<details>
-<summary>Installing for the first time</summary>
-<p>Android asks once to allow your browser to install apps: tap <em>Settings</em> in that prompt and
-switch on <em>Allow from this source</em>. Every app is signed with the same key as before, so a new
-version installs over one from F-Droid or an earlier download.</p>
+<details class="help">
+  <summary>Installing for the first time</summary>
+  <ol>
+    <li>Tap <strong>Install</strong> and wait for the download to finish.</li>
+    <li>Open it from the notification. The first time, Android asks to allow your browser to install apps: tap <em>Settings</em> and switch on <em>Allow from this source</em>.</li>
+    <li>Every app is signed with the same key as before, so it updates one installed from F-Droid or an earlier download.</li>
+  </ol>
 </details>
+<footer>APKs come from the <a href="https://github.com/jsnjack/android-apps/releases/tag/apps">apps release</a>; each app's release replaces its file.</footer>
 </main>
 <script>
 // The APKs are assets of the "apps" release; each app's `make release` replaces its file and
@@ -63,16 +92,16 @@ version installs over one from F-Droid or an earlier download.</p>
 const RELEASE = "https://github.com/jsnjack/android-apps/releases/download/apps/";
 const API = "https://api.github.com/repos/jsnjack/android-apps/releases/tags/apps";
 const APPS = [
-  {name: "DeskLink", file: "desklink.apk", source: "jsnjack/desklink",
-   summary: "Your GNOME desktop on the tablet, with keyboard, trackpad and S-Pen"},
-  {name: "Wallet", file: "wallet.apk", source: "jsnjack/wallet",
-   summary: "Loyalty cards, vouchers, tickets and boarding passes, one tap away"},
-  {name: "Weather Widget", file: "weather-widget.apk", source: "jsnjack/weather",
-   summary: "Rain and weather forecasts on your home screen"},
-  {name: "Wahoo Share", file: "wahoo-share.apk", source: null,
-   summary: "Send locations and cycling routes to your Wahoo ELEMNT"},
+  {name: "DeskLink", file: "desklink.apk", icon: "desklink", source: "jsnjack/desklink",
+   summary: "Your GNOME desktop on the tablet, with keyboard, trackpad and S-Pen."},
+  {name: "Wallet", file: "wallet.apk", icon: "wallet", source: "jsnjack/wallet",
+   summary: "Loyalty cards, vouchers, tickets and boarding passes, one tap away."},
+  {name: "Weather Widget", file: "weather-widget.apk", icon: "weather-widget", source: "jsnjack/weather",
+   summary: "Rain and weather forecasts on your home screen."},
+  {name: "Wahoo Share", file: "wahoo-share.apk", icon: "wahoo-share", source: null,
+   summary: "Send locations and cycling routes to your Wahoo ELEMNT."},
 ];
-const COLOURS = ["#2457d6", "#c2410c", "#0f766e", "#7c3aed", "#be185d"];
+const DOWNLOAD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1zM5 19h14a1 1 0 1 1 0 2H5a1 1 0 1 1 0-2z"/></svg>';
 
 function el(tag, attrs, ...children) {
   const e = document.createElement(tag);
@@ -81,32 +110,36 @@ function el(tag, attrs, ...children) {
   return e;
 }
 
-function monogram(name) {
-  return name.split(/\s+/).filter(w => /^[\p{L}\p{N}]/u.test(w)).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+function ago(date) {
+  const days = Math.floor((Date.now() - date) / 86400000);
+  if (days < 1) return "updated today";
+  if (days < 2) return "updated yesterday";
+  if (days < 60) return `updated ${days} days ago`;
+  return "updated " + date.toLocaleDateString(undefined, {month: "short", year: "numeric"});
 }
 
 const metas = {};
-APPS.forEach((app, i) => {
-  const tile = el("div", {className: "tile", ariaHidden: "true", textContent: monogram(app.name)});
-  tile.style.setProperty("--tile", COLOURS[i % COLOURS.length]);
-  const meta = el("p", {className: "meta", textContent: " "});
+for (const app of APPS) {
+  const meta = el("div", {className: "meta"});
   metas[app.file] = meta;
-  const links = el("p", {className: "links"},
-    el("a", {className: "button primary", href: RELEASE + app.file, textContent: "Install"}),
-    app.source ? el("a", {className: "plain", href: "https://github.com/" + app.source, textContent: "Source code"}) : null);
-  document.getElementById("apps").append(el("article", {className: "app"}, tile,
-    el("div", {}, el("h3", {textContent: app.name}), el("p", {textContent: app.summary}), meta, links)));
-});
+  const install = el("a", {className: "install", href: RELEASE + app.file, ariaLabel: "Install " + app.name});
+  install.innerHTML = DOWNLOAD + "<span>Install</span>";
+  document.getElementById("apps").append(el("article", {className: "app"},
+    el("div", {className: "top"},
+      el("div", {className: "icon"}, el("img", {src: `icons/${app.icon}.svg`, alt: "", width: 72, height: 72})),
+      el("div", {className: "title"}, el("h2", {textContent: app.name}), el("p", {className: "summary", textContent: app.summary}))),
+    meta,
+    el("div", {className: "actions"}, install,
+      app.source ? el("a", {className: "source", href: "https://github.com/" + app.source, textContent: "Source"}) : null)));
+}
 
 fetch(API).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(release => {
   for (const a of release.assets) {
     const meta = metas[a.name];
     if (!meta) continue;
-    const parts = [];
-    if (a.label) parts.push("Version " + a.label);
-    parts.push((a.size / 1e6).toFixed(1) + " MB");
-    parts.push("updated " + new Date(a.updated_at).toLocaleDateString(undefined, {day: "numeric", month: "short", year: "numeric"}));
-    meta.textContent = parts.join(" · ");
+    if (a.label) meta.append(el("span", {className: "chip version", textContent: "v" + a.label}));
+    meta.append(el("span", {className: "chip", textContent: (a.size / 1e6).toFixed(1) + " MB"}));
+    meta.append(el("span", {className: "chip", textContent: ago(new Date(a.updated_at))}));
   }
 }).catch(() => {});
 </script>
