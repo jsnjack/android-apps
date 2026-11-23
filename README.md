@@ -1,17 +1,31 @@
-# android-apps (retired)
+# android-apps
 
-This repository published DeskLink, Wallet, Weather Widget and Wahoo Share to
-a personal F-Droid repository through GitHub Actions. It was retired on
-2026-11-23: each app is now published only as a signed APK on its own GitHub
-release, built and signed locally by the app's `make release`.
+The install page for my Android apps: https://jsnjack.github.io/android-apps/
 
-Removed with it: the `publish.yml` workflow and its scripts, the GitHub Pages
-site at https://jsnjack.github.io/android-apps/ (so the F-Droid repository URL
-no longer answers), the Actions secrets, the `github-pages` environment, the
-read-only deploy key on `jsnjack/wahoo-share`, and Actions for this
-repository. The publisher's code is in the history before this commit.
+Open it on the phone or tablet and tap **Install**. The page is `index.html`,
+served by GitHub Pages straight from `main` (no build, no workflow). Its
+buttons download the APKs attached to this repository's `apps` release:
 
-The app signing key that all four apps use is `~/.android/debug.keystore`
-(alias `androiddebugkey`, certificate SHA-256 `53d59ccc…13ebf`). The ignored
-local `private/` folder holds the same key and the retired F-Droid index key;
-keep its encrypted backup.
+| App | File |
+|---|---|
+| DeskLink | `desklink.apk` |
+| Wallet | `wallet.apk` |
+| Weather Widget | `weather-widget.apk` |
+| Wahoo Share | `wahoo-share.apk` |
+
+Each app's `make release` builds the signed release APK and replaces its file
+here, with the version as the asset's label, which the page shows:
+
+```sh
+gh release upload apps bin/release/<file>#<version> --clobber --repo jsnjack/android-apps
+```
+
+Every app is signed with the personal key `~/.android/debug.keystore`
+(alias `androiddebugkey`, certificate SHA-256 `53d59ccc…13ebf`), the key the
+earlier F-Droid builds used, so a download installs over them. A new upload
+must have a version code at least as high as the one it replaces.
+
+The F-Droid repository, its GitHub Actions publisher and the snapshot
+releases `repo-*` were retired on 2026-11-23; the publisher's code is in the
+history. The ignored local `private/` folder keeps the signing key and the
+retired F-Droid index key; keep its encrypted backup.
